@@ -140,13 +140,55 @@ public class ArticuloDAO implements GenericDAO<Articulo> {
         return 0;
     }
 
-    public List<Articulo> findByExample(Articulo exampleArticulo) throws SQLException {
-        List<Articulo> matchingArticulos = new ArrayList<>();
+    @Override
+    public List<Articulo> findByExample(Articulo articulo) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT * FROM articulos WHERE 1=1");
+        List<Object> propiedades = new ArrayList<>();
 
+        if (articulo.getId() != 0) {
+            sql.append(" AND id = ?");
+            propiedades.add(articulo.getId());
+        }
+        if (articulo.getNombre() != null && !articulo.getNombre().isEmpty()) {
+            sql.append(" AND nombre LIKE ?");
+            propiedades.add("%" + articulo.getNombre() + "%");
+        }
+        if (articulo.getPrecio() != 0.0) {
+            sql.append(" AND precio <= ?");
+            propiedades.add(articulo.getPrecio());
+        }
+        if (articulo.getCodigo() != null && !articulo.getCodigo().isEmpty()) {
+            sql.append(" AND codigo LIKE ?");
+            propiedades.add("%" + articulo.getCodigo() + "%");
+        }
+        if (articulo.getGrupo() != 0) {
+            sql.append(" AND grupo = ?");
+            propiedades.add(articulo.getGrupo());
+        }
 
+        Connection con = ConexionBD.getConexion();
+        PreparedStatement pst = con.prepareStatement(sql.toString());
+        int parameterIndex = 1;
+        for (Object propiedad : propiedades) {
+            pst.setObject(parameterIndex, propiedad);
+            parameterIndex++;
+        }
 
-        return matchingArticulos;
+        ResultSet rs = pst.executeQuery();
+        List<Articulo> articulos = new ArrayList<>();
+        while (rs.next()) {
+            articulos.add(new Articulo(
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    rs.getFloat("precio"),
+                    rs.getString("codigo"),
+                    rs.getInt("grupo")
+            ));
+        }
+        rs.close();
+        return articulos;
     }
+
 
     @Override
     public boolean exists(int id) throws SQLException {

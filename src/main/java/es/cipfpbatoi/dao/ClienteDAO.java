@@ -141,11 +141,44 @@ public class ClienteDAO implements GenericDAO<Cliente> {
     }
 
     @Override
-    public List<Cliente> findByExample(Cliente exampleCliente) throws SQLException {
-        List<Cliente> matchingClientes = new ArrayList<>();
+    public List<Cliente> findByExample(Cliente cliente) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT * FROM clientes WHERE 1=1");
+        List<Object> propiedades = new ArrayList<>();
 
-        return matchingClientes;
+        if (cliente.getId() != 0) {
+            sql.append(" AND id = ?");
+            propiedades.add(cliente.getId());
+        }
+        if (cliente.getNombre() != null && !cliente.getNombre().isEmpty()) {
+            sql.append(" AND nombre LIKE ?");
+            propiedades.add("%" + cliente.getNombre() + "%");
+        }
+        if (cliente.getDireccion() != null && !cliente.getDireccion().isEmpty()) {
+            sql.append(" AND direccion LIKE ?");
+            propiedades.add("%" + cliente.getDireccion() + "%");
+        }
+
+        Connection con = ConexionBD.getConexion();
+        PreparedStatement pst = con.prepareStatement(sql.toString());
+        int parameterIndex = 1;
+        for (Object propiedad : propiedades) {
+            pst.setObject(parameterIndex, propiedad);
+            parameterIndex++;
+        }
+
+        ResultSet rs = pst.executeQuery();
+        List<Cliente> clientes = new ArrayList<>();
+        while (rs.next()) {
+            clientes.add(new Cliente(
+                    rs.getInt("id"),
+                    rs.getString("nombre"),
+                    rs.getString("direccion")
+            ));
+        }
+        rs.close();
+        return clientes;
     }
+
 
     @Override
     public boolean exists(int id) throws SQLException {

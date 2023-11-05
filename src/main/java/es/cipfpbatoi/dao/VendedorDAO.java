@@ -3,10 +3,7 @@ package es.cipfpbatoi.dao;
 import es.cipfpbatoi.modelo.Cliente;
 import es.cipfpbatoi.modelo.Vendedor;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,10 +121,43 @@ public class VendedorDAO implements GenericDAO<Vendedor> {
         return 0;
     }
 
-    public List<Vendedor> findByExample(Vendedor exampleVendedor) throws SQLException {
-        List<Vendedor> matchingVendedores = new ArrayList<>();
+    @Override
+    public List<Vendedor> findByExample(Vendedor vendedor) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT * FROM vendedores WHERE 1=1");
+        List<Object> propiedades = new ArrayList<>();
 
-        return matchingVendedores;
+        if (vendedor.getId() != 0) {
+            sql.append(" AND id = ?");
+            propiedades.add(vendedor.getId());
+        }
+        if (vendedor.getNombre() != null && !vendedor.getNombre().isEmpty()) {
+            sql.append(" AND nombre LIKE ?");
+            propiedades.add("%" + vendedor.getNombre() + "%");
+        }
+        if (vendedor.getFechaIngreso() != null) {
+            sql.append(" AND fecha_ingreso <= ?");
+            propiedades.add(java.sql.Date.valueOf(vendedor.getFechaIngreso()));
+        }
+        if (vendedor.getSalario() != 0) {
+            sql.append(" AND salario <= ?");
+            propiedades.add(vendedor.getSalario());
+        }
+
+        Connection con = ConexionBD.getConexion();
+        PreparedStatement pst = con.prepareStatement(sql.toString());
+        for (int i = 0; i < propiedades.size(); i++) {
+            pst.setObject(i + 1, propiedades.get(i));
+        }
+
+        ResultSet rs = pst.executeQuery();
+        List<Vendedor> vendedores = new ArrayList<>();
+        while (rs.next()) {
+            Date fechaIngreso = rs.getDate("fecha_ingreso");
+            LocalDate fechaIngresoLocalDate = ((java.sql.Date) fechaIngreso).toLocalDate();
+            vendedores.add(build(rs.getInt("id"), rs.getString("nombre"), fechaIngresoLocalDate, rs.getFloat("salario")));
+        }
+        rs.close();
+        return vendedores;
     }
 
     @Override
