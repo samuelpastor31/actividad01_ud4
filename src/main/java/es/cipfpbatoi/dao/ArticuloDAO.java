@@ -143,6 +143,8 @@ public class ArticuloDAO implements GenericDAO<Articulo> {
     public List<Articulo> findByExample(Articulo exampleArticulo) throws SQLException {
         List<Articulo> matchingArticulos = new ArrayList<>();
 
+
+
         return matchingArticulos;
     }
 

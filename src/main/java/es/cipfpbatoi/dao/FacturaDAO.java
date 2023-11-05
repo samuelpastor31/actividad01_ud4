@@ -147,23 +147,33 @@ public class FacturaDAO implements GenericDAO<Factura> {
     }
 
     public float getImporteTotal(int facturaId) throws SQLException {
-        float total = 0;
-        pstImporteTotal.setInt(1, facturaId);
-        ResultSet rs = pstImporteTotal.executeQuery();
-        if (rs.next()) {
-            total = rs.getFloat("total");
+        if (exists(facturaId)) {
+            String SQLImporteTotal = "SELECT SUM(importe * cantidad) AS total FROM lineas_factura WHERE factura = ?";
+            try (PreparedStatement pstImporteTotal = pstSelectPK.getConnection().prepareStatement(SQLImporteTotal)) {
+                pstImporteTotal.setInt(1, facturaId);
+                ResultSet rs = pstImporteTotal.executeQuery();
+                if (rs.next()) {
+                    return rs.getFloat("total");
+                }
+            }
         }
-        return total;
+        return -1.0f;
     }
 
+
     public int getNextLine(int facturaId) throws SQLException {
-        pstNextLine.setInt(1, facturaId);
-        ResultSet rs = pstNextLine.executeQuery();
-        if (rs.next()) {
-            int maxLinea = rs.getInt(facturaId);
-            return maxLinea;
+        if (exists(facturaId)) {
+            String SQLMaxLine = "SELECT IFNULL(MAX(linea), 0) + 1 AS next_line FROM lineas_factura WHERE factura = ?";
+            try (PreparedStatement pstMaxLine = pstSelectPK.getConnection().prepareStatement(SQLMaxLine)) {
+                pstMaxLine.setInt(1, facturaId);
+                ResultSet rs = pstMaxLine.executeQuery();
+                if (rs.next()) {
+                    int maxLine = rs.getInt("next_line");
+                    return maxLine;
+                }
+            }
         }
-        return 0;
+        return -1;
     }
     public List<LineaFactura> findByFactura(int facturaId) throws SQLException {
         List<LineaFactura> lineasFactura = new ArrayList<>();

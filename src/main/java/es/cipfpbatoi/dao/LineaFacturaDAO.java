@@ -75,45 +75,48 @@ public class LineaFacturaDAO implements GenericDAO<LineaFactura> {
         return null;
     }
 
-    public LineaFactura insert(LineaFactura lineaFacturaInsertar) throws SQLException {
-
-        int proximaLinea = facturaDAO.getNextLine(lineaFacturaInsertar.getFactura());
-
-
-        lineaFacturaInsertar.setLinea(proximaLinea);
-
-        pstInsert.setInt(1, lineaFacturaInsertar.getFactura());
-        pstInsert.setInt(2, lineaFacturaInsertar.getArticulo());
-        pstInsert.setInt(3, lineaFacturaInsertar.getCantidad());
-        pstInsert.setFloat(4, lineaFacturaInsertar.getImporte());
-
-        int insertados = pstInsert.executeUpdate();
-
-        // Después de la inserción, devuelve el objeto actualizado
-        if (insertados == 1) {
-            return lineaFacturaInsertar;
-        }
-        return null;
-    }
-
     public boolean update(LineaFactura lineaFacturaActualizar) throws SQLException {
-        pstUpdate.setInt(1, lineaFacturaActualizar.getCantidad());
-        pstUpdate.setFloat(2, lineaFacturaActualizar.getImporte());
-        pstUpdate.setInt(3, lineaFacturaActualizar.getLinea());
-        pstUpdate.setInt(4, lineaFacturaActualizar.getFactura());
+        String SQLUpdate = "UPDATE lineas_factura SET cantidad = ?, importe = ? WHERE linea = ? AND factura = ?";
+        try (PreparedStatement pstUpdate = pstSelectPK.getConnection().prepareStatement(SQLUpdate)) {
+            pstUpdate.setInt(1, lineaFacturaActualizar.getCantidad());
+            pstUpdate.setFloat(2, lineaFacturaActualizar.getImporte());
+            pstUpdate.setInt(3, lineaFacturaActualizar.getLinea());
+            pstUpdate.setInt(4, lineaFacturaActualizar.getFactura());
 
-        int actualizados = pstUpdate.executeUpdate();
-        return (actualizados == 1);
+            int actualizados = pstUpdate.executeUpdate();
+            return actualizados > 0; // Devuelve true si se actualizaron uno o más registros
+        }
     }
+
+    public LineaFactura insert(LineaFactura lineaFacturaInsertar) throws SQLException {
+        String SQLInsert = "INSERT INTO lineas_factura (linea, factura, articulo, cantidad, importe) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement pstInsert = pstSelectPK.getConnection().prepareStatement(SQLInsert)) {
+            int proximaLinea = facturaDAO.getNextLine(lineaFacturaInsertar.getFactura());
+            lineaFacturaInsertar.setLinea(proximaLinea);
+
+            pstInsert.setInt(1, lineaFacturaInsertar.getLinea());
+            pstInsert.setInt(2, lineaFacturaInsertar.getFactura());
+            pstInsert.setInt(3, lineaFacturaInsertar.getArticulo());
+            pstInsert.setInt(4, lineaFacturaInsertar.getCantidad());
+            pstInsert.setFloat(5, lineaFacturaInsertar.getImporte());
+
+            int insertados = pstInsert.executeUpdate();
+            if (insertados == 1) {
+                return lineaFacturaInsertar;
+            }
+            return null;
+        }
+    }
+
 
     @Override
     public boolean save(LineaFactura lineaFactura) throws SQLException {
-        if (find(lineaFactura.getLinea(), lineaFactura.getFactura()) != null) {
+        if (exists(lineaFactura.getLinea(), lineaFactura.getFactura())) {
              update(lineaFactura);
              return true;
         } else {
              insert(lineaFactura);
-             return false;
+             return true;
         }
     }
 
@@ -125,19 +128,21 @@ public class LineaFacturaDAO implements GenericDAO<LineaFactura> {
         return (borrados == 1);
     }
 
-    private int getNextLine(int factura) throws SQLException {
+    public List<LineaFactura> getByLine(int linea) throws SQLException {
+        List<LineaFactura> lineasFactura = new ArrayList<>();
+        Connection connection = ConexionBD.getConexion();
 
-        String SQLMaxLine = "SELECT MAX(linea) FROM lineas_factura WHERE factura = ?";
-        try (PreparedStatement pstMaxLine = pstSelectPK.getConnection().prepareStatement(SQLMaxLine)) {
-            pstMaxLine.setInt(1, factura);
-            ResultSet rs = pstMaxLine.executeQuery();
-            if (rs.next()) {
-                int maxLine = rs.getInt(1);
-                return maxLine + 1;
-            } else {
-                return 1;
+        String SQLFindByLine = "SELECT * FROM lineas_factura WHERE linea = ?";
+        try (PreparedStatement pstFindByLine = connection.prepareStatement(SQLFindByLine)) {
+            pstFindByLine.setInt(1, linea);
+            ResultSet rs = pstFindByLine.executeQuery();
+            while (rs.next()) {
+                lineasFactura.add(build(rs.getInt("linea"), rs.getInt("factura"), rs.getInt("articulo"), rs.getInt("cantidad"), rs.getFloat("importe")));
             }
         }
+
+        connection.close();
+        return lineasFactura;
     }
 
     @Override
