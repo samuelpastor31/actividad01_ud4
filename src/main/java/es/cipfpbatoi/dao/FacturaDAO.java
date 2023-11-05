@@ -142,7 +142,6 @@ public class FacturaDAO implements GenericDAO<Factura> {
     public List<Factura> findByExample(Factura exampleFactura) throws SQLException {
         List<Factura> matchingFacturas = new ArrayList<>();
 
-        // Agrega la lógica para buscar por ejemplo en este método.
 
         return matchingFacturas;
     }
@@ -164,7 +163,7 @@ public class FacturaDAO implements GenericDAO<Factura> {
             int maxLinea = rs.getInt(facturaId);
             return maxLinea;
         }
-        return 0;// Devuelve -1 cuando no existe un registro
+        return 0;
     }
     public List<LineaFactura> findByFactura(int facturaId) throws SQLException {
         List<LineaFactura> lineasFactura = new ArrayList<>();

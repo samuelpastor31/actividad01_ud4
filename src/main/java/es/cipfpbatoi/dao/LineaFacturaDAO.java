@@ -53,7 +53,7 @@ public class LineaFacturaDAO implements GenericDAO<LineaFactura> {
 
     public List<LineaFactura> findByFactura(int factura) throws SQLException {
         List<LineaFactura> listaLineas = new ArrayList<>();
-        // Construye la consulta SQL para encontrar todas las líneas de una factura específica
+
         String SQLFindByFactura = "SELECT * FROM lineas_factura WHERE factura = ?";
         try (PreparedStatement pstFindByFactura = pstSelectPK.getConnection().prepareStatement(SQLFindByFactura)) {
             pstFindByFactura.setInt(1, factura);
@@ -76,13 +76,12 @@ public class LineaFacturaDAO implements GenericDAO<LineaFactura> {
     }
 
     public LineaFactura insert(LineaFactura lineaFacturaInsertar) throws SQLException {
-        // Obtén el próximo número de línea disponible para la factura
+
         int proximaLinea = facturaDAO.getNextLine(lineaFacturaInsertar.getFactura());
 
-        // Asigna el número de línea a lineaFacturaInsertar
+
         lineaFacturaInsertar.setLinea(proximaLinea);
 
-        // Luego, realiza la inserción en la base de datos
         pstInsert.setInt(1, lineaFacturaInsertar.getFactura());
         pstInsert.setInt(2, lineaFacturaInsertar.getArticulo());
         pstInsert.setInt(3, lineaFacturaInsertar.getCantidad());
@@ -127,9 +126,7 @@ public class LineaFacturaDAO implements GenericDAO<LineaFactura> {
     }
 
     private int getNextLine(int factura) throws SQLException {
-        // Implementa la lógica para obtener la próxima línea disponible de la factura
-        // Puedes utilizar una consulta SQL para encontrar el valor máximo de la columna 'linea' para la factura dada y luego incrementarlo en 1.
-        // Aquí se muestra un ejemplo:
+
         String SQLMaxLine = "SELECT MAX(linea) FROM lineas_factura WHERE factura = ?";
         try (PreparedStatement pstMaxLine = pstSelectPK.getConnection().prepareStatement(SQLMaxLine)) {
             pstMaxLine.setInt(1, factura);
@@ -138,15 +135,14 @@ public class LineaFacturaDAO implements GenericDAO<LineaFactura> {
                 int maxLine = rs.getInt(1);
                 return maxLine + 1;
             } else {
-                return 1; // Si no hay líneas existentes para esta factura, inicia en 1.
+                return 1;
             }
         }
     }
 
     @Override
     public long size() throws SQLException {
-        // En este caso, size no tiene mucho sentido ya que se manejan las líneas por factura, no globalmente.
-        // Devolvemos -1 para indicar que no se puede determinar el tamaño global.
+
         return -1;
     }
 
@@ -170,6 +166,5 @@ public class LineaFacturaDAO implements GenericDAO<LineaFactura> {
 
     }
 
-    // Otros métodos (findAll, exists, etc.) pueden quedar sin implementar ya que no tienen sentido para esta tabla.
 }
 

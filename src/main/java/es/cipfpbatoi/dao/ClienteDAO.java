@@ -144,36 +144,6 @@ public class ClienteDAO implements GenericDAO<Cliente> {
     public List<Cliente> findByExample(Cliente exampleCliente) throws SQLException {
         List<Cliente> matchingClientes = new ArrayList<>();
 
-//        // Build the SQL query based on the example object
-//        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM clientes WHERE 1=1");
-//
-//        if (exampleCliente.getNombre() != null) {
-//            queryBuilder.append(" AND nombre LIKE ?");
-//        }
-//
-//        if (exampleCliente.getDireccion() != null) {
-//            queryBuilder.append(" AND direccion LIKE ?");
-//        }
-//
-//        try (Connection con = ConexionBD.getConexion();
-//             PreparedStatement pst = con.prepareStatement(queryBuilder.toString())) {
-//
-//            int paramIndex = 1;
-//
-//            if (exampleCliente.getNombre() != null) {
-//                pst.setString(paramIndex++, "%" + exampleCliente.getNombre() + "%");
-//            }
-//
-//            if (exampleCliente.getDireccion() != null) {
-//                pst.setString(paramIndex, "%" + exampleCliente.getDireccion() + "%");
-//            }
-//
-//            ResultSet rs = pst.executeQuery();
-//            while (rs.next()) {
-//                matchingClientes.add(build(rs.getInt("id"), rs.getString("nombre"), rs.getString("direccion")));
-//            }
-//        }
-
         return matchingClientes;
     }
 

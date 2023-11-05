@@ -126,42 +126,6 @@ public class VendedorDAO implements GenericDAO<Vendedor> {
 
     public List<Vendedor> findByExample(Vendedor exampleVendedor) throws SQLException {
         List<Vendedor> matchingVendedores = new ArrayList<>();
-//        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM vendedores WHERE 1=1");
-//
-//        if (exampleVendedor.getNombre() != null) {
-//            queryBuilder.append(" AND nombre LIKE ?");
-//        }
-//
-//        if (exampleVendedor.getFechaIngreso() != null) {
-//            queryBuilder.append(" AND fecha_ingreso = ?");
-//        }
-//
-//        if (exampleVendedor.getSalario() != 0) {
-//            queryBuilder.append(" AND salario = ?");
-//        }
-//
-//        try (Connection con = ConexionBD.getConexion();
-//             PreparedStatement pst = con.prepareStatement(queryBuilder.toString())) {
-//
-//            int paramIndex = 1;
-//
-//            if (exampleVendedor.getNombre() != null) {
-//                pst.setString(paramIndex++, "%" + exampleVendedor.getNombre() + "%");
-//            }
-//
-//            if (exampleVendedor.getFechaIngreso() != null) {
-//                pst.setDate(paramIndex++, java.sql.Date.valueOf(exampleVendedor.getFechaIngreso()));
-//            }
-//
-//            if (exampleVendedor.getSalario() != 0) {
-//                pst.setFloat(paramIndex, exampleVendedor.getSalario());
-//            }
-//
-//            ResultSet rs = pst.executeQuery();
-//            while (rs.next()) {
-//                matchingVendedores.add(build(rs.getInt("id"), rs.getString("nombre"), rs.getDate("fecha_ingreso").toLocalDate(), rs.getFloat("salario")));
-//            }
-//        }
 
         return matchingVendedores;
     }
